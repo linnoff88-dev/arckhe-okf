@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OKF — Open Knowledge Format v0.2</title>
+<meta name="description" content="Guia do Open Knowledge Format (OKF): formato aberto e vendor-neutral para representar conhecimento como markdown + YAML frontmatter, com agente de referência, visualizador e toolbox do Knowledge Catalog.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#E2A23B; --amb2:#f0c070; --sky:#38bdf8; --pro:#cbd5e1;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#b9791d; --amb2:#a16207; --sky:#0369a1; --pro:#b45309;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb)}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .pro{color:var(--pro);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .pro:hover{filter:brightness(1.15)}
+  nav .clubpro{display:inline-flex;align-items:center;gap:6px}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut)} nav .links a.sec:hover{color:var(--txt)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  @media(max-width:760px){nav .links a.sec{display:none}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(226,162,59,.22),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.18rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:34ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;display:block}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.92rem;margin:0}
+  .card p + pre{margin-top:14px}
+  .num{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;background:rgba(226,162,59,.14);color:var(--amb);font-family:Sora;font-weight:800;font-size:.9rem;margin-bottom:.7em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0}
+  pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px 1fr;gap:16px;margin-bottom:26px}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .7em}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.ex{grid-template-columns:1fr}}
+  .ex figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .ex figure img{width:100%;display:block}
+  .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
+  .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border:none}
+  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .d strong{display:block;margin-bottom:.2em}
+  .phase .d span{color:var(--mut);font-size:.92rem}
+  table.f{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:8px;display:block;overflow-x:auto}
+  table.f th,table.f td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.f th{font-family:Sora;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+  table.f td code{color:var(--amb2)}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">📚</span> OKF</a>
+  <span class="sep">|</span>
+  <span class="clubpro">
+    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+    <span class="sep">-</span>
+    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
+  </span>
+  <div class="links">
+    <a class="sec" href="#oque">O que é</a>
+    <a class="sec" href="#formato">Formato</a>
+    <a class="sec" href="#fluxo">Como funciona</a>
+    <a class="sec" href="#guia">Guia de uso</a>
+    <a class="sec" href="#exemplos">Bundles</a>
+    <a class="sec" href="#roadmap">Versões</a>
+    <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+    <a class="btn" href="https://github.com/GoogleCloudPlatform/knowledge-catalog" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">Open Knowledge Format · v0.2</span>
+      <h1>Conhecimento como <span class="amb">markdown</span> versionável, legível por gente e por agente.</h1>
+      <p class="lead">OKF é um formato aberto e vendor-neutral: um bundle é uma árvore de arquivos <code>.md</code> com YAML frontmatter — sem SDK, sem API proprietária, sem lock-in.</p>
+      <div class="cta">
+        <a class="btn" href="#guia">Começar o guia</a>
+        <a class="btn ghost" href="https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md" target="_blank" rel="noopener">Ler a SPEC</a>
+      </div>
+    </div>
+    <figure><img src="assets/hero.png" alt="Open Knowledge Format — formato aberto de conhecimento"></figure>
+  </div>
+</header>
+
+<section id="oque"><div class="wrap">
+  <span class="chip">O que é</span>
+  <h2>Um formato, não uma plataforma</h2>
+  <p class="sub">O repositório <em>knowledge-catalog</em> gira em torno da especificação OKF. O agente de referência e o visualizador existem só para tornar o formato tangível nas duas pontas: quem produz e quem consome. Nada aqui é produto oficial do Google.</p>
+  <div class="grid g3">
+    <div class="card"><h3>📄 Markdown + frontmatter</h3><p>Cada conceito é um arquivo <code>.md</code>: YAML no topo para o que se filtra e indexa, corpo livre para a prosa, o schema e as queries que humanos e LLMs realmente leem.</p></div>
+    <div class="card"><h3>🔀 Versionável em git</h3><p>Um bundle é um diretório. Pull request, diff linha a linha, blame e review funcionam de graça — curar conhecimento vira atividade normal de engenharia.</p></div>
+    <div class="card"><h3>🔓 Vendor-neutral</h3><p>Qualquer um produz (humano, agente ADK/LangChain, export de Dataplex, Unity Catalog, Collibra) e qualquer um consome (Obsidian, MkDocs, um LLM, um índice de busca).</p></div>
+    <div class="card"><h3>🧭 Divulgação progressiva</h3><p><code>index.md</code> por diretório deixa o agente navegar a hierarquia um nível por vez, em vez de carregar o bundle inteiro no contexto.</p></div>
+    <div class="card"><h3>🕸️ Grafo, não só árvore</h3><p>Links markdown normais entre conceitos expressam relações mais ricas do que o pai/filho implícito no diretório.</p></div>
+    <div class="card"><h3>🔎 Confiança de primeira classe</h3><p>v0.2 põe no frontmatter de onde veio (<code>sources</code>), quem produziu e conferiu (<code>generated</code>, <code>verified</code>) e se ainda vale (<code>status</code>, <code>stale_after</code>).</p></div>
+  </div>
+</div></section>
+
+<section id="formato"><div class="wrap">
+  <span class="chip">Formato</span>
+  <h2>Bundle, conceito, frontmatter</h2>
+  <p class="sub">Um <strong>bundle</strong> é a unidade de distribuição: uma árvore de diretórios organizada como o domínio pedir. Todo <code>.md</code> não-reservado é um <strong>conceito</strong>; o <strong>concept ID</strong> é o caminho do arquivo sem o <code>.md</code>. Só dois nomes são reservados: <code>index.md</code> (listagem do diretório) e <code>log.md</code> (histórico de atualizações).</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Estrutura</h3>
+      <p>O diretório é livre; a semântica vem do frontmatter e dos links.</p>
+<pre><span class="c"># bundle</span>
+path/to/bundle/
+  index.md            <span class="c"># listagem (opcional)</span>
+  log.md              <span class="c"># histórico (opcional)</span>
+  metrics/
+    index.md
+    gross-margin.md   <span class="c"># um conceito</span>
+  computations/
+    revenue-ytd.md
+  attesters/
+    sql_equality.py</pre>
+    </div>
+    <div class="card">
+      <h3>Um conceito</h3>
+      <p><code>type</code> é o único campo sempre obrigatório — um doc só com <code>type</code> já é conformante.</p>
+<pre><span class="c">---</span>
+<span class="k">type</span>: BigQuery Table
+<span class="k">title</span>: <span class="s">events_</span>
+<span class="k">description</span>: <span class="s">Eventos GA4 particionados por dia.</span>
+<span class="k">resource</span>: <span class="s">bigquery://project/dataset/events_</span>
+<span class="k">tags</span>: [ga4, ecommerce]
+<span class="k">status</span>: stable
+<span class="c">---</span>
+
+<span class="c"># Schema</span>
+...prosa, tabelas, queries de exemplo...</pre>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px;font-size:1.1rem">Campos do frontmatter</h3>
+  <table class="f">
+    <tr><th>Família</th><th>Campos</th><th>Para quê</th></tr>
+    <tr><td>Identidade</td><td><code>type</code> (obrigatório), <code>title</code>, <code>description</code>, <code>resource</code>, <code>tags</code></td><td>Roteamento, filtro e apresentação. Tipos não são registrados centralmente; consumidores toleram tipos desconhecidos.</td></tr>
+    <tr><td>Proveniência</td><td><code>sources</code> (com <code>author</code>, <code>usage_count</code>, <code>last_modified</code>, <code>usage_window</code>)</td><td>De onde a afirmação veio. OKF registra os <em>sinais de credibilidade</em>, não um veredito.</td></tr>
+    <tr><td>Confiança</td><td><code>generated</code>, <code>verified</code></td><td>Quem produziu e quem confirmou. Daí o consumidor deriva a trust tier: não verificado, confirmado por máquina, revisado por humano.</td></tr>
+    <tr><td>Ciclo de vida</td><td><code>status</code> (<code>draft</code>/<code>stable</code>/<code>deprecated</code>), <code>stale_after</code></td><td>Se o conceito ainda está atual. Ausente <code>status</code> ⇒ <code>stable</code>.</td></tr>
+    <tr><td>Computação</td><td><code>runtime</code>, <code>parameters</code>, <code>computation</code>, <code>executor</code>, <code>attester</code></td><td>Só no tipo <code>Attested Computation</code> (§10).</td></tr>
+  </table>
+  <p class="sub" style="margin-top:20px">Produtores podem incluir quaisquer chaves extras; consumidores <strong>devem</strong> preservar chaves desconhecidas e <strong>não podem</strong> rejeitar um bundle por campo opcional ausente, tipo desconhecido, link quebrado ou <code>index.md</code> faltando.</p>
+
+  <div class="card" style="margin-top:8px">
+    <h3>🧾 Attested Computation — a novidade da v0.2</h3>
+    <p>Proveniência responde “de onde veio esse número”; <strong>atestação</strong> responde “ele foi produzido do jeito que mandamos?”. Uma computação sancionada vira um conceito próprio (<code>type: Attested Computation</code>) com <code>runtime</code> (bigquery, dbt, python, Looker…) definindo o que os <code>parameters</code> significam, um <code>executor</code> que roda e devolve um <em>receipt</em>, e um <code>attester</code> — código determinístico, sem LLM — que inspeciona o receipt e dá o veredito. Métrica, dashboard e relatório apenas linkam para ela. OKF guarda a computação e o meio de checá-la; não executa nada.</p>
+  </div>
+</div></section>
+
+<section id="fluxo"><div class="wrap">
+  <span class="chip">Como funciona</span>
+  <h2>Do dataset ao bundle navegável</h2>
+  <p class="sub">O agente de referência (Python, Google ADK + Gemini) roda em duas passadas e escreve markdown puro. O visualizador lê esse mesmo markdown — produtor e consumidor conversam só por arquivos.</p>
+  <div class="flow">
+    <span>BigQuery</span><span class="arr">→</span>
+    <span>Passada BQ · 1 doc por conceito</span><span class="arr">→</span>
+    <span>Passada web · crawl dos seeds</span><span class="arr">→</span>
+    <span>Bundle OKF (.md)</span><span class="arr">→</span>
+    <span>viz.html</span>
+  </div>
+  <div class="grid g3" style="margin-top:26px">
+    <div class="card"><h3>1 · Passada BQ</h3><p>Escreve um doc OKF por conceito que a fonte anuncia, usando só metadados do BigQuery.</p></div>
+    <div class="card"><h3>2 · Passada web</h3><p>O LLM vira crawler: busca os seeds via <code>fetch_url</code>, decide quais links seguir e, por página, enriquece conceitos existentes, cria um <code>references/&lt;slug&gt;</code> ou pula. Teto duro de páginas (<code>--web-max-pages</code>) e filtro de hosts são impostos dentro da ferramenta.</p></div>
+    <div class="card"><h3>3 · Consumo</h3><p><code>visualize</code> gera um HTML self-contained: grafo force-directed, painel de detalhe com o markdown renderizado, backlinks “Cited by”, busca e filtro por tipo.</p></div>
+  </div>
+</div></section>
+
+<section id="pre"><div class="wrap">
+  <span class="chip">Pré-requisitos</span>
+  <h2>O que precisa estar no lugar</h2>
+  <p class="sub">Só para rodar o agente de referência. Para <em>ler</em> ou <em>escrever</em> OKF à mão, nada disso é necessário — é markdown.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Python 3.11+</h3><p>O pacote <code>reference-agent</code> vive em <code>okf/</code> e instala em venv.</p><pre><span class="k">python3.13 -m venv .venv</span></pre></div>
+    <div class="card"><h3>BigQuery</h3><p>Datasets públicos são legíveis, mas os bytes lidos são cobrados no seu projeto.</p><pre><span class="k">gcloud auth application-default login</span>
+<span class="k">gcloud config set project</span> <span class="s">&lt;id&gt;</span></pre></div>
+    <div class="card"><h3>Gemini</h3><p>Via AI Studio ou Vertex AI.</p><pre><span class="k">export</span> GEMINI_API_KEY=<span class="s">...</span>
+<span class="c"># ou Vertex:</span>
+<span class="k">export</span> GOOGLE_GENAI_USE_VERTEXAI=<span class="s">true</span>
+<span class="k">export</span> GOOGLE_CLOUD_PROJECT=<span class="s">&lt;id&gt;</span>
+<span class="k">export</span> GOOGLE_CLOUD_LOCATION=<span class="s">&lt;region&gt;</span></pre></div>
+  </div>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <span class="chip">Guia de uso · passo a passo</span>
+  <h2>Produzir e consumir um bundle</h2>
+  <p class="sub">Todos os comandos rodam a partir da pasta <code>okf/</code> do repositório.</p>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Instalar</h3>
+    <p>Cria o venv e instala o pacote em modo editável, com as dependências de dev.</p>
+<pre><span class="k">python3.13 -m venv .venv</span>
+<span class="k">.venv/bin/pip install --index-url</span> <span class="s">https://pypi.org/simple/</span> <span class="k">-e</span> .[dev]</pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Gerar um bundle a partir de um dataset</h3>
+    <p>Aponte para um dataset BigQuery e uma pasta de saída. Os seeds da passada web são explícitos.</p>
+<pre><span class="k">.venv/bin/python -m reference_agent enrich</span> \
+    <span class="k">--source</span> bq \
+    <span class="k">--dataset</span> <span class="s">&lt;project&gt;.&lt;dataset&gt;</span> \
+    <span class="k">--web-seed-file</span> <span class="s">&lt;path/to/seeds.txt&gt;</span> \
+    <span class="k">--out</span> <span class="s">./bundles/&lt;name&gt;</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Rodar só o BigQuery, sem web</h3>
+    <p>Omita os seeds ou passe <code>--no-web</code> para pular a passada de crawl.</p>
+<pre><span class="k">.venv/bin/python -m reference_agent enrich</span> \
+    <span class="k">--source</span> bq <span class="k">--dataset</span> <span class="s">&lt;project&gt;.&lt;dataset&gt;</span> \
+    <span class="k">--no-web --out</span> <span class="s">./bundles/&lt;name&gt;</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Iterar em um conceito só</h3>
+    <p><code>--concept</code> é repetível — útil para refinar um doc sem regerar o bundle inteiro.</p>
+<pre><span class="k">.venv/bin/python -m reference_agent enrich</span> ... \
+    <span class="k">--concept</span> <span class="s">tables/events_</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Visualizar o bundle</h3>
+    <p>Gera <code>bundles/&lt;name&gt;/viz.html</code>: um arquivo só, sem backend, para abrir no navegador, versionar ao lado do bundle ou servir estático.</p>
+<pre><span class="k">.venv/bin/python -m reference_agent visualize --bundle</span> <span class="s">./bundles/&lt;name&gt;</span>
+
+<span class="c"># saída em outro lugar, com outro título no header</span>
+<span class="k">.venv/bin/python -m reference_agent visualize</span> \
+    <span class="k">--bundle</span> <span class="s">./bundles/crypto_bitcoin</span> \
+    <span class="k">--out</span> <span class="s">/tmp/btc.html</span> <span class="k">--name</span> <span class="s">"Bitcoin OKF"</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">6</div><div>
+    <h3>Rodar os testes</h3>
+    <p>Suíte pytest do pacote de referência.</p>
+<pre><span class="k">.venv/bin/pytest</span></pre>
+  </div></div>
+</div></section>
+
+<section id="exemplos"><div class="wrap">
+  <span class="chip">Bundles &amp; toolbox</span>
+  <h2>OKF na prática</h2>
+  <p class="sub">Cada <em>sample</em> em <code>okf/samples/</code> traz a receita (seeds + comando <code>enrich</code> exato) e o bundle produzido, versionado em <code>okf/bundles/</code> com o <code>viz.html</code> ao lado.</p>
+  <div class="grid g4">
+    <div class="card"><h3>🛒 ga4</h3><p>GA4 Google Merchandise Store — dataset público de e-commerce, semeado com a documentação canônica do GA4 BigQuery Export.</p></div>
+    <div class="card"><h3>💬 stackoverflow</h3><p>Espelho do Stack Exchange Data Dump. Exercita enriquecimento multi-conceito a partir de páginas de doc transversais.</p></div>
+    <div class="card"><h3>₿ crypto_bitcoin</h3><p>Blocos, transações, inputs e outputs do pipeline <code>bitcoin-etl</code>. Exercita relações de chave estrangeira descritas em prosa.</p></div>
+    <div class="card"><h3>🏪 acme_retail</h3><p>Bundle sintético que demonstra a v0.2 completa: <code>computations/</code>, <code>attesters/</code> (Python determinístico), métricas, políticas e skills.</p></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>🧰 toolbox/mdcode — Metadata as Code</h3><p>Gerencia metadados como artefatos de código sincronizáveis com o Knowledge Catalog: snapshot com manifesto, arquivos YAML por entrada, e os comandos <code>init</code> / <code>pull</code> / <code>push</code> (BigQuery e knowledge bases).</p></div>
+    <div class="card"><h3>🤖 toolbox/enrichment — Enrichment Agent</h3><p>Agente TypeScript pronto para uso, mais um harness customizável, para produzir, evoluir e manter metadados no Knowledge Catalog e deixá-los prontos para consumo por agentes.</p></div>
+  </div>
+</div></section>
+
+<section id="roadmap"><div class="wrap">
+  <span class="chip">Versões</span>
+  <h2>De v0.1 a v0.2</h2>
+  <p class="sub">A v0.2 é quase toda aditiva: chaves opcionais novas, um tipo de conceito novo e um heading convencional novo. Na ausência de todos eles, o documento é um conceito v0.1 comum.</p>
+  <div class="phase"><div class="tag">v0.1</div><div class="d"><strong>O núcleo</strong><span>Estrutura de bundle, nomes reservados, <code>type</code> obrigatório, <code>title</code>/<code>description</code>/<code>resource</code>/<code>tags</code>, cross-linking, index, log e conformance permissiva.</span></div></div>
+  <div class="phase"><div class="tag">v0.2 ➕</div><div class="d"><strong>Proveniência, confiança e ciclo de vida</strong><span><code>sources</code> com sinais de credibilidade por fonte, <code>generated</code>, <code>verified</code>, <code>status</code>, <code>stale_after</code>, e a convenção de ator (<code>&lt;produtor&gt;/&lt;versão&gt;</code>, <code>human:&lt;id&gt;</code>, <code>process:&lt;id&gt;</code>).</span></div></div>
+  <div class="phase"><div class="tag">v0.2 ➕</div><div class="d"><strong>Attested Computation</strong><span>Tipo novo com <code>runtime</code>, <code>parameters</code>, <code>computation</code>, <code>executor</code> e <code>attester</code>, mais o heading de corpo <code># Computation</code>.</span></div></div>
+  <div class="phase"><div class="tag">Fora do escopo</div><div class="d"><strong>O que OKF não faz</strong><span>Não define taxonomia fixa de tipos, não prescreve infraestrutura de armazenamento ou consulta, não substitui schemas de domínio (Avro, Protobuf, OpenAPI — só os referencia) e não padroniza o empacotamento do código que executor e attester apontam.</span></div></div>
+</div></section>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">Markdown + YAML</div><div class="pill">Python 3.11+</div><div class="pill">Google ADK · Gemini</div><div class="pill">BigQuery</div><div class="pill">Cytoscape.js</div>
+    <p style="margin-top:18px">OKF · especificação aberta v0.2 — este repositório e seu conteúdo não são um produto oficial do Google ·
+      <a href="https://github.com/GoogleCloudPlatform/knowledge-catalog" target="_blank" rel="noopener">GoogleCloudPlatform/knowledge-catalog</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='okf-theme';
+    var b=document.body, t=document.getElementById('themeToggle');
+    if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; }
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      localStorage.setItem(KEY, light?'light':'dark');
+    });
+  })();
+</script>
+</body>
+</html>
